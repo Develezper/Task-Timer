@@ -1,17 +1,19 @@
 # Task Timer
 
-Aplicacion web para crear tareas, iniciarlas, finalizarlas y medir el tiempo invertido en cada una usando MongoDB.
+Web app to create tasks, start them, complete them, and track the time spent on each one using MongoDB.
 
-## Caracteristicas
+Live URL: `https://task-timer-delta-nine.vercel.app/`
 
-- Crear tareas con estado inicial `pending`
-- Iniciar una tarea y actualizar el contador cada segundo
-- Finalizar tareas y conservar el tiempo total
-- Eliminar tareas
-- Persistencia completa con MongoDB
-- Interfaz responsive con tarjetas reutilizables
+## Features
 
-## Tecnologias
+- Create tasks with an initial `pending` status
+- Start a task and update the timer every second
+- Complete tasks while preserving the total tracked time
+- Delete tasks
+- Full persistence with MongoDB
+- Responsive interface with reusable cards
+
+## Technologies
 
 - Next.js
 - React
@@ -19,16 +21,16 @@ Aplicacion web para crear tareas, iniciarlas, finalizarlas y medir el tiempo inv
 - Tailwind CSS
 - MongoDB
 
-## Ejecutar en local
+## Run Locally
 
 ```bash
 bun install
 bun run dev
 ```
 
-Antes de iniciar, crea un archivo `.env.local` basado en `.env.example`.
+Before starting, create a `.env.local` file based on `.env.example`.
 
-Abre `http://localhost:3000`.
+Open `http://localhost:3000`.
 
 ## Scripts
 
@@ -38,7 +40,7 @@ bun run lint
 bun run build
 ```
 
-## Estructura principal
+## Main Structure
 
 ```text
 src/
@@ -49,6 +51,6 @@ src/
 ├── types/
 ```
 
-## Despliegue
+## Deployment
 
-El proyecto esta listo para desplegarse en Vercel configurando `MONGODB_URI` y `MONGODB_DB`.
+The project is ready to be deployed on Vercel by configuring `MONGODB_URI` and `MONGODB_DB`.
