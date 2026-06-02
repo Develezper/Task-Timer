@@ -49,7 +49,7 @@ export function Card({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 flex-1">
           <span
-            className={`inline-flex text-xs font-medium ${badge}`}
+            className={`inline-flex text-xs font-semibold ${badge}`}
           >
             {label}
           </span>
