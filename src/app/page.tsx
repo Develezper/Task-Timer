@@ -3,9 +3,8 @@
 import { useEffect, useState } from "react";
 import { TaskForm } from "@/components/tasks/TaskForm";
 import { TaskList } from "@/components/tasks/TaskList";
+import { isTaskList } from "@/lib/task-utils";
 import type { Task } from "@/types/task";
-
-const STORAGE_KEY = "task-timer-app";
 
 function formatTime(totalMilliseconds: number) {
   const totalSeconds = Math.floor(totalMilliseconds / 1000);
@@ -29,63 +28,39 @@ function getElapsedTime(task: Task, currentTime: number) {
   return task.timeSpent + (currentTime - task.startedAt);
 }
 
-function isTaskList(value: unknown): value is Task[] {
-  if (!Array.isArray(value)) {
-    return false;
-  }
-
-  return value.every((task) => {
-    if (typeof task !== "object" || task === null) {
-      return false;
-    }
-
-    const candidate = task as Partial<Task>;
-    return (
-      typeof candidate.id === "string" &&
-      typeof candidate.title === "string" &&
-      (candidate.status === "pending" ||
-        candidate.status === "in_progress" ||
-        candidate.status === "done") &&
-      typeof candidate.timeSpent === "number" &&
-      (typeof candidate.startedAt === "number" || candidate.startedAt === null)
-    );
-  });
-}
-
 export default function Home() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [currentTime, setCurrentTime] = useState(0);
   const [isHydrated, setIsHydrated] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
-    const timeoutId = window.setTimeout(() => {
+    const loadTasks = async () => {
       try {
-        const storedTasks = window.localStorage.getItem(STORAGE_KEY);
+        setError("");
+        const response = await fetch("/api/tasks", { cache: "no-store" });
 
-        if (storedTasks) {
-          const parsedTasks = JSON.parse(storedTasks) as unknown;
+        if (!response.ok) {
+          throw new Error("No se pudieron cargar las tareas.");
+        }
 
-          if (isTaskList(parsedTasks)) {
-            setTasks(parsedTasks);
-          }
+        const data = (await response.json()) as unknown;
+
+        if (isTaskList(data)) {
+          setTasks(data);
+        } else {
+          throw new Error("El formato de las tareas es invalido.");
         }
       } catch {
-        window.localStorage.removeItem(STORAGE_KEY);
+        setError("No fue posible conectar con MongoDB.");
       } finally {
         setIsHydrated(true);
       }
-    }, 0);
+    };
 
-    return () => window.clearTimeout(timeoutId);
+    void loadTasks();
   }, []);
-
-  useEffect(() => {
-    if (!isHydrated) {
-      return;
-    }
-
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-  }, [isHydrated, tasks]);
 
   useEffect(() => {
     const hasActiveTask = tasks.some((task) => task.status === "in_progress");
@@ -102,27 +77,41 @@ export default function Home() {
   }, [tasks]);
 
   const handleCreateTask = (title: string) => {
-    const newTask: Task = {
-      id: crypto.randomUUID(),
-      title,
-      status: "pending",
-      timeSpent: 0,
-      startedAt: null,
-    };
+    void (async () => {
+      try {
+        setIsSaving(true);
+        setError("");
+        const response = await fetch("/api/tasks", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ title }),
+        });
 
-    setTasks((currentTasks) => [newTask, ...currentTasks]);
+        if (!response.ok) {
+          throw new Error("No se pudo crear la tarea.");
+        }
+
+        const newTask = (await response.json()) as Task;
+        setTasks((currentTasks) => [newTask, ...currentTasks]);
+      } catch {
+        setError("No se pudo crear la tarea.");
+      } finally {
+        setIsSaving(false);
+      }
+    })();
   };
 
   const handleStartTask = (taskId: string) => {
-    const startTime = Date.now();
-
-    setCurrentTime(startTime);
-    setTasks((currentTasks) =>
-      currentTasks.map((task) => {
+    void (async () => {
+      const startTime = Date.now();
+      const previousTasks = tasks;
+      const nextTasks = tasks.map((task) => {
         if (task.id === taskId) {
           return {
             ...task,
-            status: "in_progress",
+            status: "in_progress" as const,
             startedAt: startTime,
           };
         }
@@ -130,23 +119,65 @@ export default function Home() {
         if (task.status === "in_progress" && task.startedAt !== null) {
           return {
             ...task,
-            status: "pending",
+            status: "pending" as const,
             timeSpent: task.timeSpent + (startTime - task.startedAt),
             startedAt: null,
           };
         }
 
         return task;
-      }),
-    );
+      });
+
+      try {
+        setIsSaving(true);
+        setError("");
+        setCurrentTime(startTime);
+        setTasks(nextTasks);
+
+        const changedTasks = nextTasks.filter((task) => {
+          const previousTask = previousTasks.find((item) => item.id === task.id);
+
+          return (
+            previousTask &&
+            (previousTask.status !== task.status ||
+              previousTask.timeSpent !== task.timeSpent ||
+              previousTask.startedAt !== task.startedAt)
+          );
+        });
+
+        const responses = await Promise.all(
+          changedTasks.map((task) =>
+            fetch(`/api/tasks/${task.id}`, {
+              method: "PATCH",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                status: task.status,
+                timeSpent: task.timeSpent,
+                startedAt: task.startedAt,
+              }),
+            }),
+          ),
+        );
+
+        if (responses.some((response) => !response.ok)) {
+          throw new Error("No se pudo iniciar la tarea.");
+        }
+      } catch {
+        setTasks(previousTasks);
+        setError("No se pudo iniciar la tarea.");
+      } finally {
+        setIsSaving(false);
+      }
+    })();
   };
 
   const handleFinishTask = (taskId: string) => {
-    const finishTime = Date.now();
-
-    setCurrentTime(finishTime);
-    setTasks((currentTasks) =>
-      currentTasks.map((task) => {
+    void (async () => {
+      const finishTime = Date.now();
+      const previousTasks = tasks;
+      const nextTasks = tasks.map((task) => {
         if (task.id !== taskId) {
           return task;
         }
@@ -158,16 +189,67 @@ export default function Home() {
 
         return {
           ...task,
-          status: "done",
+          status: "done" as const,
           timeSpent: totalTime,
           startedAt: null,
         };
-      }),
-    );
+      });
+
+      const updatedTask = nextTasks.find((task) => task.id === taskId);
+
+      try {
+        setIsSaving(true);
+        setError("");
+        setCurrentTime(finishTime);
+        setTasks(nextTasks);
+
+        const response = await fetch(`/api/tasks/${taskId}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            status: updatedTask?.status,
+            timeSpent: updatedTask?.timeSpent,
+            startedAt: updatedTask?.startedAt,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("No se pudo finalizar la tarea.");
+        }
+      } catch {
+        setTasks(previousTasks);
+        setError("No se pudo finalizar la tarea.");
+      } finally {
+        setIsSaving(false);
+      }
+    })();
   };
 
   const handleDeleteTask = (taskId: string) => {
-    setTasks((currentTasks) => currentTasks.filter((task) => task.id !== taskId));
+    void (async () => {
+      const previousTasks = tasks;
+
+      try {
+        setIsSaving(true);
+        setError("");
+        setTasks((currentTasks) => currentTasks.filter((task) => task.id !== taskId));
+
+        const response = await fetch(`/api/tasks/${taskId}`, {
+          method: "DELETE",
+        });
+
+        if (!response.ok) {
+          throw new Error("No se pudo eliminar la tarea.");
+        }
+      } catch {
+        setTasks(previousTasks);
+        setError("No se pudo eliminar la tarea.");
+      } finally {
+        setIsSaving(false);
+      }
+    })();
   };
 
   const totalTasks = tasks.length;
@@ -213,9 +295,19 @@ export default function Home() {
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-xl font-semibold text-zinc-950">Mis tareas</h2>
           <p className="text-sm text-zinc-500">
-            {activeTasks > 0 ? "1 tarea activa" : "Sin tareas activas"}
+            {isSaving
+              ? "Guardando cambios..."
+              : activeTasks > 0
+                ? "1 tarea activa"
+                : "Sin tareas activas"}
           </p>
         </div>
+
+        {error && (
+          <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
 
         {isHydrated && (
           <TaskList

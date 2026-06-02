@@ -1,6 +1,6 @@
 # Task Timer
 
-Aplicacion web para crear tareas, iniciarlas, finalizarlas y medir el tiempo invertido en cada una.
+Aplicacion web para crear tareas, iniciarlas, finalizarlas y medir el tiempo invertido en cada una usando MongoDB.
 
 ## Caracteristicas
 
@@ -8,7 +8,7 @@ Aplicacion web para crear tareas, iniciarlas, finalizarlas y medir el tiempo inv
 - Iniciar una tarea y actualizar el contador cada segundo
 - Finalizar tareas y conservar el tiempo total
 - Eliminar tareas
-- Persistencia completa con `localStorage`
+- Persistencia completa con MongoDB
 - Interfaz responsive con tarjetas reutilizables
 
 ## Tecnologias
@@ -17,22 +17,25 @@ Aplicacion web para crear tareas, iniciarlas, finalizarlas y medir el tiempo inv
 - React
 - TypeScript
 - Tailwind CSS
+- MongoDB
 
 ## Ejecutar en local
 
 ```bash
-npm install
-npm run dev
+bun install
+bun run dev
 ```
+
+Antes de iniciar, crea un archivo `.env.local` basado en `.env.example`.
 
 Abre `http://localhost:3000`.
 
 ## Scripts
 
 ```bash
-npm run dev
-npm run lint
-npm run build
+bun run dev
+bun run lint
+bun run build
 ```
 
 ## Estructura principal
@@ -48,4 +51,4 @@ src/
 
 ## Despliegue
 
-El proyecto esta listo para desplegarse en Vercel.
+El proyecto esta listo para desplegarse en Vercel configurando `MONGODB_URI` y `MONGODB_DB`.
