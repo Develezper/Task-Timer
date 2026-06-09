@@ -43,7 +43,7 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(
-      sanitizeComment(comment.toObject() as Record<string, unknown>),
+      sanitizeComment(comment.toObject() as unknown as Record<string, unknown>),
       { status: 201 },
     );
   } catch {

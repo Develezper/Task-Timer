@@ -37,7 +37,9 @@ export async function GET(_request: Request, context: RouteContext) {
       .lean();
 
     return NextResponse.json(
-      comments.map((comment) => sanitizeComment(comment as Record<string, unknown>)),
+      comments.map((comment) =>
+        sanitizeComment(comment as unknown as Record<string, unknown>),
+      ),
     );
   } catch {
     return NextResponse.json(
