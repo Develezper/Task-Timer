@@ -1,4 +1,3 @@
-import { ObjectId } from "mongodb";
 import type { Task } from "@/types/task";
 
 const TASK_STATUSES: Task["status"][] = ["pending", "in_progress", "done"];
@@ -54,14 +53,6 @@ export function isTaskStatus(value: unknown): value is Task["status"] {
 
 export function isNonNegativeNumber(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value) && value >= 0;
-}
-
-export function buildTaskIdentifierFilter(identifier: string) {
-  if (ObjectId.isValid(identifier)) {
-    return { _id: new ObjectId(identifier) };
-  }
-
-  return { id: identifier };
 }
 
 function serializeObjectId(value: unknown) {

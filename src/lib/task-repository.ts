@@ -1,6 +1,7 @@
 import { ObjectId } from "mongodb";
 import { getCommentsCollection, getTasksCollection } from "@/lib/mongodb";
-import { buildTaskIdentifierFilter, sanitizeTask } from "@/lib/task-utils";
+import { buildTaskIdentifierFilter } from "@/lib/task-query";
+import { sanitizeTask } from "@/lib/task-utils";
 
 const COMMENT_LOOKUP_STAGES = [
   {
