@@ -1,0 +1,70 @@
+{
+  "HomePage": {
+    "description": "Crea tareas, inicia una, finalizala y guarda el tiempo invertido.",
+    "languages": "Idiomas",
+    "total": "Total",
+    "pending": "Pendientes",
+    "inProgress": "En progreso",
+    "done": "Finalizadas",
+    "myTasks": "Mis tareas",
+    "saving": "Guardando cambios...",
+    "oneActiveTask": "1 tarea activa",
+    "noActiveTasks": "Sin tareas activas"
+  },
+  "TaskForm": {
+    "label": "Titulo de la tarea",
+    "placeholder": "Escribe una nueva tarea",
+    "submit": "Crear"
+  },
+  "TaskList": {
+    "empty": "No hay tareas. Crea una para empezar."
+  },
+  "TaskCard": {
+    "pending": "Pendiente",
+    "inProgress": "En progreso",
+    "done": "Finalizada",
+    "oneComment": "1 comentario",
+    "manyComments": "{count} comentarios",
+    "timeSpent": "Tiempo invertido",
+    "viewDetails": "Ver detalles",
+    "start": "Iniciar",
+    "finish": "Finalizar",
+    "delete": "Eliminar"
+  },
+  "TaskDetailPage": {
+    "back": "Volver al listado",
+    "oneCommentRegistered": "1 comentario registrado",
+    "manyCommentsRegistered": "{count} comentarios registrados",
+    "loading": "Cargando detalle de la tarea...",
+    "mongoId": "Identificador en MongoDB: {id}",
+    "accumulatedTime": "Tiempo acumulado",
+    "status": "Estado",
+    "startDate": "Fecha de inicio",
+    "endDate": "Fecha de fin",
+    "commentsTitle": "Historial de comentarios",
+    "commentsDescription": "Se muestran del más antiguo al más reciente.",
+    "notRecorded": "Sin registrar",
+    "pending": "Pendiente",
+    "inProgress": "En progreso",
+    "done": "Finalizada"
+  },
+  "CommentForm": {
+    "title": "Agregar comentario",
+    "description": "Registra notas, avances o contexto importante de la tarea.",
+    "label": "Contenido del comentario",
+    "placeholder": "Escribe tu comentario",
+    "saving": "Guardando...",
+    "submit": "Comentar"
+  },
+  "CommentList": {
+    "dateUnavailable": "Fecha no disponible",
+    "empty": "No hay comentarios aún. Sé el primero en comentar.",
+    "saving": "Guardando...",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "edited": "Editado: {date}",
+    "edit": "Editar",
+    "deleting": "Eliminando...",
+    "delete": "Eliminar"
+  }
+}

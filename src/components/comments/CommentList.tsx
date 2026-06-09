@@ -1,5 +1,6 @@
 "use client";
 
+import { useLocale, useTranslations } from "next-intl";
 import type { Comment } from "@/types/comment";
 
 interface CommentListProps {
@@ -15,14 +16,14 @@ interface CommentListProps {
   onDeleteComment: (comment: Comment) => Promise<void>;
 }
 
-function formatCommentDate(date: string) {
+function formatCommentDate(date: string, locale: string, fallback: string) {
   const parsedDate = new Date(date);
 
   if (Number.isNaN(parsedDate.getTime())) {
-    return "Fecha no disponible";
+    return fallback;
   }
 
-  return parsedDate.toLocaleString("es-CO", {
+  return parsedDate.toLocaleString(locale, {
     dateStyle: "medium",
     timeStyle: "short",
   });
@@ -44,10 +45,13 @@ export function CommentList({
   onSaveEdit,
   onDeleteComment,
 }: CommentListProps) {
+  const locale = useLocale();
+  const t = useTranslations("CommentList");
+
   if (comments.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-6 text-sm text-zinc-500">
-        No hay comentarios aún. ¡Sé el primero en comentar!
+        {t("empty")}
       </div>
     );
   }
@@ -76,7 +80,7 @@ export function CommentList({
                   disabled={isSavingEdit || editingContent.trim().length === 0}
                   className="rounded-xl bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-zinc-700 disabled:cursor-not-allowed disabled:bg-zinc-300"
                 >
-                  {isSavingEdit ? "Guardando..." : "Guardar"}
+                  {isSavingEdit ? t("saving") : t("save")}
                 </button>
                 <button
                   type="button"
@@ -84,7 +88,7 @@ export function CommentList({
                   disabled={isSavingEdit}
                   className="rounded-xl border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Cancelar
+                  {t("cancel")}
                 </button>
               </div>
             </div>
@@ -94,11 +98,21 @@ export function CommentList({
               <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
                 <div className="space-y-1">
                   <p className="text-xs font-medium uppercase tracking-[0.12em] text-zinc-400">
-                    {formatCommentDate(comment.createdAt)}
+                    {formatCommentDate(
+                      comment.createdAt,
+                      locale,
+                      t("dateUnavailable"),
+                    )}
                   </p>
                   {isEdited(comment) && (
                     <p className="text-xs font-medium text-zinc-400">
-                      Editado: {formatCommentDate(comment.updatedAt)}
+                      {t("edited", {
+                        date: formatCommentDate(
+                          comment.updatedAt,
+                          locale,
+                          t("dateUnavailable"),
+                        ),
+                      })}
                     </p>
                   )}
                 </div>
@@ -107,7 +121,7 @@ export function CommentList({
                   onClick={() => onStartEdit(comment)}
                   className="rounded-xl border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100"
                 >
-                  Editar
+                  {t("edit")}
                 </button>
                 <button
                   type="button"
@@ -117,7 +131,7 @@ export function CommentList({
                   disabled={deletingCommentId === comment._id}
                   className="rounded-xl border border-red-200 px-3 py-2 text-sm font-medium text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  {deletingCommentId === comment._id ? "Eliminando..." : "Eliminar"}
+                  {deletingCommentId === comment._id ? t("deleting") : t("delete")}
                 </button>
               </div>
             </>

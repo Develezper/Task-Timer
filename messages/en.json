@@ -1,0 +1,70 @@
+{
+  "HomePage": {
+    "description": "Create tasks, start one, finish it and keep track of the time spent.",
+    "languages": "Languages",
+    "total": "Total",
+    "pending": "Pending",
+    "inProgress": "In progress",
+    "done": "Completed",
+    "myTasks": "My tasks",
+    "saving": "Saving changes...",
+    "oneActiveTask": "1 active task",
+    "noActiveTasks": "No active tasks"
+  },
+  "TaskForm": {
+    "label": "Task title",
+    "placeholder": "Write a new task",
+    "submit": "Create"
+  },
+  "TaskList": {
+    "empty": "There are no tasks yet. Create one to get started."
+  },
+  "TaskCard": {
+    "pending": "Pending",
+    "inProgress": "In progress",
+    "done": "Completed",
+    "oneComment": "1 comment",
+    "manyComments": "{count} comments",
+    "timeSpent": "Time spent",
+    "viewDetails": "View details",
+    "start": "Start",
+    "finish": "Finish",
+    "delete": "Delete"
+  },
+  "TaskDetailPage": {
+    "back": "Back to list",
+    "oneCommentRegistered": "1 registered comment",
+    "manyCommentsRegistered": "{count} registered comments",
+    "loading": "Loading task details...",
+    "mongoId": "MongoDB identifier: {id}",
+    "accumulatedTime": "Accumulated time",
+    "status": "Status",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "commentsTitle": "Comment history",
+    "commentsDescription": "Comments are shown from oldest to newest.",
+    "notRecorded": "Not recorded",
+    "pending": "Pending",
+    "inProgress": "In progress",
+    "done": "Completed"
+  },
+  "CommentForm": {
+    "title": "Add comment",
+    "description": "Save notes, progress or important context for this task.",
+    "label": "Comment content",
+    "placeholder": "Write your comment",
+    "saving": "Saving...",
+    "submit": "Comment"
+  },
+  "CommentList": {
+    "dateUnavailable": "Date unavailable",
+    "empty": "There are no comments yet. Be the first to comment.",
+    "saving": "Saving...",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edited": "Edited: {date}",
+    "edit": "Edit",
+    "deleting": "Deleting...",
+    "delete": "Delete"
+  }
+}

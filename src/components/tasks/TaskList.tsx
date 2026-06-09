@@ -1,6 +1,7 @@
 "use client";
 
 import { memo } from "react";
+import { useTranslations } from "next-intl";
 import { Card } from "@/components/Card";
 import type { Task } from "@/types/task";
 
@@ -19,10 +20,12 @@ function TaskListComponent({
   onFinishTask,
   onDeleteTask,
 }: TaskListProps) {
+  const t = useTranslations("TaskList");
+
   if (tasks.length === 0) {
     return (
       <div className="rounded-lg border border-dashed border-zinc-300 p-8 text-center text-sm text-zinc-500">
-        No hay tareas. ¡Crea una para empezar!
+        {t("empty")}
       </div>
     );
   }

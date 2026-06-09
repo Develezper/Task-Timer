@@ -1,0 +1,70 @@
+{
+  "HomePage": {
+    "description": "Crie tarefas, inicie uma, finalize e guarde o tempo investido.",
+    "languages": "Idiomas",
+    "total": "Total",
+    "pending": "Pendentes",
+    "inProgress": "Em andamento",
+    "done": "Finalizadas",
+    "myTasks": "Minhas tarefas",
+    "saving": "Salvando alterações...",
+    "oneActiveTask": "1 tarefa ativa",
+    "noActiveTasks": "Sem tarefas ativas"
+  },
+  "TaskForm": {
+    "label": "Titulo da tarefa",
+    "placeholder": "Escreva uma nova tarefa",
+    "submit": "Criar"
+  },
+  "TaskList": {
+    "empty": "Ainda não há tarefas. Crie uma para começar."
+  },
+  "TaskCard": {
+    "pending": "Pendente",
+    "inProgress": "Em andamento",
+    "done": "Finalizada",
+    "oneComment": "1 comentário",
+    "manyComments": "{count} comentários",
+    "timeSpent": "Tempo investido",
+    "viewDetails": "Ver detalhes",
+    "start": "Iniciar",
+    "finish": "Finalizar",
+    "delete": "Excluir"
+  },
+  "TaskDetailPage": {
+    "back": "Voltar para a lista",
+    "oneCommentRegistered": "1 comentário registrado",
+    "manyCommentsRegistered": "{count} comentários registrados",
+    "loading": "Carregando detalhes da tarefa...",
+    "mongoId": "Identificador no MongoDB: {id}",
+    "accumulatedTime": "Tempo acumulado",
+    "status": "Status",
+    "startDate": "Data de início",
+    "endDate": "Data de fim",
+    "commentsTitle": "Histórico de comentários",
+    "commentsDescription": "Os comentários são exibidos do mais antigo ao mais recente.",
+    "notRecorded": "Não registrado",
+    "pending": "Pendente",
+    "inProgress": "Em andamento",
+    "done": "Finalizada"
+  },
+  "CommentForm": {
+    "title": "Adicionar comentário",
+    "description": "Registre notas, avanços ou contexto importante da tarefa.",
+    "label": "Conteúdo do comentário",
+    "placeholder": "Escreva seu comentário",
+    "saving": "Salvando...",
+    "submit": "Comentar"
+  },
+  "CommentList": {
+    "dateUnavailable": "Data indisponível",
+    "empty": "Ainda não há comentários. Seja o primeiro a comentar.",
+    "saving": "Salvando...",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "edited": "Editado: {date}",
+    "edit": "Editar",
+    "deleting": "Excluindo...",
+    "delete": "Excluir"
+  }
+}
