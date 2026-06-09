@@ -1,7 +1,16 @@
+"use client";
+
 import type { Comment } from "@/types/comment";
 
 interface CommentListProps {
   comments: Comment[];
+  editingCommentId: string | null;
+  editingContent: string;
+  isSavingEdit: boolean;
+  onStartEdit: (comment: Comment) => void;
+  onCancelEdit: () => void;
+  onChangeEditingContent: (value: string) => void;
+  onSaveEdit: (commentId: string) => Promise<void>;
 }
 
 function formatCommentDate(date: string) {
@@ -17,7 +26,20 @@ function formatCommentDate(date: string) {
   });
 }
 
-export function CommentList({ comments }: CommentListProps) {
+function isEdited(comment: Comment) {
+  return new Date(comment.updatedAt).getTime() > new Date(comment.createdAt).getTime();
+}
+
+export function CommentList({
+  comments,
+  editingCommentId,
+  editingContent,
+  isSavingEdit,
+  onStartEdit,
+  onCancelEdit,
+  onChangeEditingContent,
+  onSaveEdit,
+}: CommentListProps) {
   if (comments.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-6 text-sm text-zinc-500">
@@ -33,10 +55,59 @@ export function CommentList({ comments }: CommentListProps) {
           key={comment._id}
           className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm"
         >
-          <p className="text-sm leading-6 text-zinc-700">{comment.content}</p>
-          <p className="mt-3 text-xs font-medium uppercase tracking-[0.12em] text-zinc-400">
-            {formatCommentDate(comment.createdAt)}
-          </p>
+          {editingCommentId === comment._id ? (
+            <div className="space-y-3">
+              <textarea
+                value={editingContent}
+                onChange={(event) => onChangeEditingContent(event.target.value)}
+                rows={4}
+                className="w-full rounded-xl border border-zinc-300 bg-transparent px-3 py-3 text-sm outline-none transition focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/10"
+              />
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    void onSaveEdit(comment._id);
+                  }}
+                  disabled={isSavingEdit || editingContent.trim().length === 0}
+                  className="rounded-xl bg-zinc-900 px-4 py-2 text-sm font-semibold text-white transition hover:bg-zinc-700 disabled:cursor-not-allowed disabled:bg-zinc-300"
+                >
+                  {isSavingEdit ? "Guardando..." : "Guardar"}
+                </button>
+                <button
+                  type="button"
+                  onClick={onCancelEdit}
+                  disabled={isSavingEdit}
+                  className="rounded-xl border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <p className="text-sm leading-6 text-zinc-700">{comment.content}</p>
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                <div className="space-y-1">
+                  <p className="text-xs font-medium uppercase tracking-[0.12em] text-zinc-400">
+                    {formatCommentDate(comment.createdAt)}
+                  </p>
+                  {isEdited(comment) && (
+                    <p className="text-xs font-medium text-zinc-400">
+                      Editado: {formatCommentDate(comment.updatedAt)}
+                    </p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onStartEdit(comment)}
+                  className="rounded-xl border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100"
+                >
+                  Editar
+                </button>
+              </div>
+            </>
+          )}
         </li>
       ))}
     </ul>

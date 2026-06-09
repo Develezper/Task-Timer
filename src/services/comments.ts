@@ -1,5 +1,5 @@
 import { isComment, isCommentList } from "@/lib/comment-utils";
-import type { CreateCommentInput } from "@/types/comment";
+import type { CreateCommentInput, UpdateCommentInput } from "@/types/comment";
 
 export async function getComments(todoId: string) {
   const response = await fetch(`/api/comments/${encodeURIComponent(todoId)}`, {
@@ -32,6 +32,30 @@ export async function createComment(input: CreateCommentInput) {
 
   if (!response.ok) {
     throw new Error(await getErrorMessage(response, "No se pudo guardar el comentario."));
+  }
+
+  const data = (await response.json()) as unknown;
+
+  if (!isComment(data)) {
+    throw new Error("El formato del comentario es invalido.");
+  }
+
+  return data;
+}
+
+export async function updateComment(commentId: string, input: UpdateCommentInput) {
+  const response = await fetch(`/api/comments/item/${encodeURIComponent(commentId)}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(input),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      await getErrorMessage(response, "No se pudo actualizar el comentario."),
+    );
   }
 
   const data = (await response.json()) as unknown;

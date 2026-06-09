@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { CommentForm } from "@/components/comments/CommentForm";
 import { CommentList } from "@/components/comments/CommentList";
-import { createComment, getComments } from "@/services/comments";
+import { createComment, getComments, updateComment } from "@/services/comments";
 import { getTaskById } from "@/services/tasks";
 import type { Comment } from "@/types/comment";
 import type { Task } from "@/types/task";
@@ -42,6 +42,9 @@ export default function TaskDetailPage() {
   const [comments, setComments] = useState<Comment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
+  const [editingContent, setEditingContent] = useState("");
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -121,6 +124,48 @@ export default function TaskDetailPage() {
       throw error;
     } finally {
       setIsSubmittingComment(false);
+    }
+  };
+
+  const handleStartEdit = (comment: Comment) => {
+    setEditingCommentId(comment._id);
+    setEditingContent(comment.content);
+    setError("");
+  };
+
+  const handleCancelEdit = () => {
+    setEditingCommentId(null);
+    setEditingContent("");
+  };
+
+  const handleSaveEdit = async (commentId: string) => {
+    const normalizedContent = editingContent.trim();
+
+    if (!normalizedContent) {
+      setError("El comentario no puede estar vacío.");
+      return;
+    }
+
+    try {
+      setIsSavingEdit(true);
+      setError("");
+      const updatedComment = await updateComment(commentId, {
+        content: normalizedContent,
+      });
+
+      setComments((currentComments) =>
+        currentComments.map((comment) =>
+          comment._id === updatedComment._id ? updatedComment : comment,
+        ),
+      );
+      setEditingCommentId(null);
+      setEditingContent("");
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "No se pudo actualizar el comentario.",
+      );
+    } finally {
+      setIsSavingEdit(false);
     }
   };
 
@@ -220,7 +265,16 @@ export default function TaskDetailPage() {
                   Se muestran del más antiguo al más reciente.
                 </p>
               </div>
-              <CommentList comments={comments} />
+              <CommentList
+                comments={comments}
+                editingCommentId={editingCommentId}
+                editingContent={editingContent}
+                isSavingEdit={isSavingEdit}
+                onStartEdit={handleStartEdit}
+                onCancelEdit={handleCancelEdit}
+                onChangeEditingContent={setEditingContent}
+                onSaveEdit={handleSaveEdit}
+              />
             </div>
 
             <div>

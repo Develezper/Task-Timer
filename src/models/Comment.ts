@@ -4,6 +4,7 @@ export interface CommentDocument {
   todoId: Types.ObjectId;
   content: string;
   createdAt: Date;
+  updatedAt: Date;
 }
 
 const commentSchema = new Schema<CommentDocument>(
@@ -23,7 +24,7 @@ const commentSchema = new Schema<CommentDocument>(
   {
     timestamps: {
       createdAt: true,
-      updatedAt: false,
+      updatedAt: true,
     },
     versionKey: false,
   },

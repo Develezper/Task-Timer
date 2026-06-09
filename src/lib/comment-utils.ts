@@ -19,16 +19,20 @@ export function isComment(value: unknown): value is Comment {
     typeof candidate._id === "string" &&
     typeof candidate.todoId === "string" &&
     typeof candidate.content === "string" &&
-    typeof candidate.createdAt === "string"
+    typeof candidate.createdAt === "string" &&
+    typeof candidate.updatedAt === "string"
   );
 }
 
 export function sanitizeComment(comment: Record<string, unknown>): Comment {
+  const createdAt = normalizeDate(comment.createdAt);
+
   return {
     _id: serializeId(comment._id),
     todoId: serializeId(comment.todoId),
     content: String(comment.content ?? ""),
-    createdAt: normalizeDate(comment.createdAt),
+    createdAt,
+    updatedAt: normalizeDate(comment.updatedAt ?? createdAt),
   };
 }
 
