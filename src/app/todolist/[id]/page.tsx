@@ -217,7 +217,7 @@ export default function TaskDetailPage() {
                   Historial de comentarios
                 </h2>
                 <p className="text-sm text-zinc-500">
-                  Se muestran del mas antiguo al mas reciente.
+                  Se muestran del más antiguo al más reciente.
                 </p>
               </div>
               <CommentList comments={comments} />

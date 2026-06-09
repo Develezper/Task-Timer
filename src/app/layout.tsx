@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Task Timer",
-  description: "ToDo List con temporizador y persistencia en localStorage.",
+  description: "ToDo List con temporizador, detalle de tareas y comentarios persistidos en MongoDB.",
 };
 
 export default function RootLayout({

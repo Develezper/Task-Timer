@@ -21,7 +21,7 @@ export function CommentList({ comments }: CommentListProps) {
   if (comments.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-zinc-300 bg-white p-6 text-sm text-zinc-500">
-        No hay comentarios aun. ¡Se el primero en comentar!
+        No hay comentarios aún. ¡Sé el primero en comentar!
       </div>
     );
   }
