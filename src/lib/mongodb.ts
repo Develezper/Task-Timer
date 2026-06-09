@@ -32,3 +32,10 @@ export async function getTasksCollection() {
 
   return mongoClient.db(dbName).collection("tasks");
 }
+
+export async function getCommentsCollection() {
+  const mongoClient = await getClientPromise();
+  const dbName = process.env.MONGODB_DB || "task_timer";
+
+  return mongoClient.db(dbName).collection("comments");
+}
