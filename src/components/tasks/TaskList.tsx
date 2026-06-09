@@ -32,9 +32,11 @@ function TaskListComponent({
       {tasks.map((task) => (
         <li key={task.id}>
           <Card
+            taskId={task._id}
             title={task.title}
             status={task.status}
             time={getTaskTime(task)}
+            commentCount={task.commentCount}
             onStart={() => onStartTask(task.id)}
             onFinish={() => onFinishTask(task.id)}
             onDelete={() => onDeleteTask(task.id)}

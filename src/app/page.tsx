@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { TaskForm } from "@/components/tasks/TaskForm";
 import { TaskList } from "@/components/tasks/TaskList";
-import { isTaskList } from "@/lib/task-utils";
+import { createTask, deleteTask, getTasks, updateTask } from "@/services/tasks";
 import type { Task } from "@/types/task";
 
 function formatTime(totalMilliseconds: number) {
@@ -39,21 +39,12 @@ export default function Home() {
     const loadTasks = async () => {
       try {
         setError("");
-        const response = await fetch("/api/tasks", { cache: "no-store" });
-
-        if (!response.ok) {
-          throw new Error("No se pudieron cargar las tareas.");
-        }
-
-        const data = (await response.json()) as unknown;
-
-        if (isTaskList(data)) {
-          setTasks(data);
-        } else {
-          throw new Error("El formato de las tareas es invalido.");
-        }
-      } catch {
-        setError("No fue posible conectar con MongoDB.");
+        const data = await getTasks();
+        setTasks(data);
+      } catch (error) {
+        setError(
+          error instanceof Error ? error.message : "No fue posible conectar con MongoDB.",
+        );
       } finally {
         setIsHydrated(true);
       }
@@ -81,22 +72,10 @@ export default function Home() {
       try {
         setIsSaving(true);
         setError("");
-        const response = await fetch("/api/tasks", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ title }),
-        });
-
-        if (!response.ok) {
-          throw new Error("No se pudo crear la tarea.");
-        }
-
-        const newTask = (await response.json()) as Task;
+        const newTask = await createTask(title);
         setTasks((currentTasks) => [newTask, ...currentTasks]);
-      } catch {
-        setError("No se pudo crear la tarea.");
+      } catch (error) {
+        setError(error instanceof Error ? error.message : "No se pudo crear la tarea.");
       } finally {
         setIsSaving(false);
       }
@@ -113,6 +92,7 @@ export default function Home() {
             ...task,
             status: "in_progress" as const,
             startedAt: startTime,
+            finishedAt: null,
           };
         }
 
@@ -122,6 +102,7 @@ export default function Home() {
             status: "pending" as const,
             timeSpent: task.timeSpent + (startTime - task.startedAt),
             startedAt: null,
+            finishedAt: null,
           };
         }
 
@@ -145,28 +126,25 @@ export default function Home() {
           );
         });
 
-        const responses = await Promise.all(
+        const savedTasks = await Promise.all(
           changedTasks.map((task) =>
-            fetch(`/api/tasks/${task.id}`, {
-              method: "PATCH",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                status: task.status,
-                timeSpent: task.timeSpent,
-                startedAt: task.startedAt,
-              }),
+            updateTask(task.id, {
+              status: task.status,
+              timeSpent: task.timeSpent,
+              startedAt: task.startedAt,
+              finishedAt: task.finishedAt,
             }),
           ),
         );
 
-        if (responses.some((response) => !response.ok)) {
-          throw new Error("No se pudo iniciar la tarea.");
-        }
-      } catch {
+        setTasks((currentTasks) =>
+          currentTasks.map(
+            (task) => savedTasks.find((savedTask) => savedTask.id === task.id) ?? task,
+          ),
+        );
+      } catch (error) {
         setTasks(previousTasks);
-        setError("No se pudo iniciar la tarea.");
+        setError(error instanceof Error ? error.message : "No se pudo iniciar la tarea.");
       } finally {
         setIsSaving(false);
       }
@@ -192,6 +170,7 @@ export default function Home() {
           status: "done" as const,
           timeSpent: totalTime,
           startedAt: null,
+          finishedAt: finishTime,
         };
       });
 
@@ -203,24 +182,19 @@ export default function Home() {
         setCurrentTime(finishTime);
         setTasks(nextTasks);
 
-        const response = await fetch(`/api/tasks/${taskId}`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            status: updatedTask?.status,
-            timeSpent: updatedTask?.timeSpent,
-            startedAt: updatedTask?.startedAt,
-          }),
+        const savedTask = await updateTask(taskId, {
+          status: updatedTask?.status ?? "done",
+          timeSpent: updatedTask?.timeSpent ?? 0,
+          startedAt: updatedTask?.startedAt ?? null,
+          finishedAt: updatedTask?.finishedAt ?? finishTime,
         });
 
-        if (!response.ok) {
-          throw new Error("No se pudo finalizar la tarea.");
-        }
-      } catch {
+        setTasks((currentTasks) =>
+          currentTasks.map((task) => (task.id === savedTask.id ? savedTask : task)),
+        );
+      } catch (error) {
         setTasks(previousTasks);
-        setError("No se pudo finalizar la tarea.");
+        setError(error instanceof Error ? error.message : "No se pudo finalizar la tarea.");
       } finally {
         setIsSaving(false);
       }
@@ -236,16 +210,10 @@ export default function Home() {
         setError("");
         setTasks((currentTasks) => currentTasks.filter((task) => task.id !== taskId));
 
-        const response = await fetch(`/api/tasks/${taskId}`, {
-          method: "DELETE",
-        });
-
-        if (!response.ok) {
-          throw new Error("No se pudo eliminar la tarea.");
-        }
-      } catch {
+        await deleteTask(taskId);
+      } catch (error) {
         setTasks(previousTasks);
-        setError("No se pudo eliminar la tarea.");
+        setError(error instanceof Error ? error.message : "No se pudo eliminar la tarea.");
       } finally {
         setIsSaving(false);
       }

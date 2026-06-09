@@ -1,19 +1,10 @@
 import { NextResponse } from "next/server";
-import { getTasksCollection } from "@/lib/mongodb";
-import { sanitizeTask } from "@/lib/task-utils";
-import type { Task } from "@/types/task";
+import { createTaskInRepository, listTasksFromRepository } from "@/lib/task-repository";
 
 export async function GET() {
   try {
-    const collection = await getTasksCollection();
-    const tasks = await collection
-      .find({}, { projection: { _id: 0 } })
-      .sort({ createdAt: -1 })
-      .toArray();
-
-    return NextResponse.json(
-      tasks.map((task) => sanitizeTask(task as Record<string, unknown>)),
-    );
+    const tasks = await listTasksFromRepository();
+    return NextResponse.json(tasks);
   } catch {
     return NextResponse.json(
       { message: "No se pudieron consultar las tareas." },
@@ -24,7 +15,7 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as Partial<Task>;
+    const body = (await request.json()) as { title?: string };
     const title = body.title?.trim();
 
     if (!title) {
@@ -34,23 +25,9 @@ export async function POST(request: Request) {
       );
     }
 
-    const now = Date.now();
-    const task: Task & { createdAt: number; updatedAt: number } = {
-      id: crypto.randomUUID(),
-      title,
-      status: "pending",
-      timeSpent: 0,
-      startedAt: null,
-      createdAt: now,
-      updatedAt: now,
-    };
+    const task = await createTaskInRepository(title);
 
-    const collection = await getTasksCollection();
-    await collection.insertOne(task);
-
-    return NextResponse.json(sanitizeTask(task as unknown as Record<string, unknown>), {
-      status: 201,
-    });
+    return NextResponse.json(task, { status: 201 });
   } catch {
     return NextResponse.json(
       { message: "No se pudo guardar la tarea." },

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getTasksCollection } from "@/lib/mongodb";
-import { isNonNegativeNumber, isTaskStatus, sanitizeTask } from "@/lib/task-utils";
+import { deleteTaskInRepository, findTaskByIdentifier, updateTaskInRepository } from "@/lib/task-repository";
+import { isNonNegativeNumber, isTaskStatus } from "@/lib/task-utils";
 import type { Task } from "@/types/task";
 
 type RouteContext = {
@@ -8,6 +8,24 @@ type RouteContext = {
     id: string;
   }>;
 };
+
+export async function GET(_request: Request, context: RouteContext) {
+  try {
+    const { id } = await context.params;
+    const task = await findTaskByIdentifier(id);
+
+    if (!task) {
+      return NextResponse.json({ message: "Tarea no encontrada." }, { status: 404 });
+    }
+
+    return NextResponse.json(task);
+  } catch {
+    return NextResponse.json(
+      { message: "No se pudo consultar la tarea." },
+      { status: 500 },
+    );
+  }
+}
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
@@ -39,29 +57,29 @@ export async function PATCH(request: Request, context: RouteContext) {
       );
     }
 
-    const collection = await getTasksCollection();
+    if (
+      body.finishedAt !== null &&
+      body.finishedAt !== undefined &&
+      !isNonNegativeNumber(body.finishedAt)
+    ) {
+      return NextResponse.json(
+        { message: "La fecha de finalizacion es invalida." },
+        { status: 400 },
+      );
+    }
 
-    const result = await collection.findOneAndUpdate(
-      { id },
-      {
-        $set: {
-          status: body.status,
-          timeSpent: body.timeSpent,
-          startedAt: body.startedAt ?? null,
-          updatedAt: Date.now(),
-        },
-      },
-      {
-        returnDocument: "after",
-        projection: { _id: 0 },
-      },
-    );
+    const result = await updateTaskInRepository(id, {
+      status: body.status,
+      timeSpent: body.timeSpent,
+      startedAt: body.startedAt ?? null,
+      finishedAt: body.finishedAt ?? null,
+    });
 
     if (!result) {
       return NextResponse.json({ message: "Tarea no encontrada." }, { status: 404 });
     }
 
-    return NextResponse.json(sanitizeTask(result as Record<string, unknown>));
+    return NextResponse.json(result);
   } catch {
     return NextResponse.json(
       { message: "No se pudo actualizar la tarea." },
@@ -73,10 +91,9 @@ export async function PATCH(request: Request, context: RouteContext) {
 export async function DELETE(_request: Request, context: RouteContext) {
   try {
     const { id } = await context.params;
-    const collection = await getTasksCollection();
-    const result = await collection.deleteOne({ id });
+    const deleted = await deleteTaskInRepository(id);
 
-    if (result.deletedCount === 0) {
+    if (!deleted) {
       return NextResponse.json({ message: "Tarea no encontrada." }, { status: 404 });
     }
 
