@@ -4,7 +4,12 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { CommentForm } from "@/components/comments/CommentForm";
 import { CommentList } from "@/components/comments/CommentList";
-import { createComment, getComments, updateComment } from "@/services/comments";
+import {
+  createComment,
+  deleteComment,
+  getComments,
+  updateComment,
+} from "@/services/comments";
 import { getTaskById } from "@/services/tasks";
 import type { Comment } from "@/types/comment";
 import type { Task } from "@/types/task";
@@ -45,6 +50,7 @@ export default function TaskDetailPage() {
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState("");
   const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [deletingCommentId, setDeletingCommentId] = useState<string | null>(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -169,6 +175,37 @@ export default function TaskDetailPage() {
     }
   };
 
+  const handleDeleteComment = async (comment: Comment) => {
+    try {
+      setDeletingCommentId(comment._id);
+      setError("");
+      await deleteComment(comment._id);
+
+      setComments((currentComments) =>
+        currentComments.filter((currentComment) => currentComment._id !== comment._id),
+      );
+      setTask((currentTask) =>
+        currentTask
+          ? {
+              ...currentTask,
+              commentCount: Math.max(0, currentTask.commentCount - 1),
+            }
+          : currentTask,
+      );
+
+      if (editingCommentId === comment._id) {
+        setEditingCommentId(null);
+        setEditingContent("");
+      }
+    } catch (error) {
+      setError(
+        error instanceof Error ? error.message : "No se pudo eliminar el comentario.",
+      );
+    } finally {
+      setDeletingCommentId(null);
+    }
+  };
+
   return (
     <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 px-4 py-8 sm:px-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -270,10 +307,12 @@ export default function TaskDetailPage() {
                 editingCommentId={editingCommentId}
                 editingContent={editingContent}
                 isSavingEdit={isSavingEdit}
+                deletingCommentId={deletingCommentId}
                 onStartEdit={handleStartEdit}
                 onCancelEdit={handleCancelEdit}
                 onChangeEditingContent={setEditingContent}
                 onSaveEdit={handleSaveEdit}
+                onDeleteComment={handleDeleteComment}
               />
             </div>
 

@@ -67,6 +67,16 @@ export async function updateComment(commentId: string, input: UpdateCommentInput
   return data;
 }
 
+export async function deleteComment(commentId: string) {
+  const response = await fetch(`/api/comments/item/${encodeURIComponent(commentId)}`, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    throw new Error(await getErrorMessage(response, "No se pudo eliminar el comentario."));
+  }
+}
+
 async function getErrorMessage(response: Response, fallbackMessage: string) {
   try {
     const data = (await response.json()) as { message?: string };

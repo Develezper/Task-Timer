@@ -7,10 +7,12 @@ interface CommentListProps {
   editingCommentId: string | null;
   editingContent: string;
   isSavingEdit: boolean;
+  deletingCommentId: string | null;
   onStartEdit: (comment: Comment) => void;
   onCancelEdit: () => void;
   onChangeEditingContent: (value: string) => void;
   onSaveEdit: (commentId: string) => Promise<void>;
+  onDeleteComment: (comment: Comment) => Promise<void>;
 }
 
 function formatCommentDate(date: string) {
@@ -35,10 +37,12 @@ export function CommentList({
   editingCommentId,
   editingContent,
   isSavingEdit,
+  deletingCommentId,
   onStartEdit,
   onCancelEdit,
   onChangeEditingContent,
   onSaveEdit,
+  onDeleteComment,
 }: CommentListProps) {
   if (comments.length === 0) {
     return (
@@ -104,6 +108,16 @@ export function CommentList({
                   className="rounded-xl border border-zinc-300 px-3 py-2 text-sm font-medium text-zinc-700 transition hover:bg-zinc-100"
                 >
                   Editar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    void onDeleteComment(comment);
+                  }}
+                  disabled={deletingCommentId === comment._id}
+                  className="rounded-xl border border-red-200 px-3 py-2 text-sm font-medium text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {deletingCommentId === comment._id ? "Eliminando..." : "Eliminar"}
                 </button>
               </div>
             </>

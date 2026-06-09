@@ -63,3 +63,34 @@ export async function PATCH(request: Request, context: RouteContext) {
     );
   }
 }
+
+export async function DELETE(_request: Request, context: RouteContext) {
+  try {
+    const { commentId } = await context.params;
+
+    if (!Types.ObjectId.isValid(commentId)) {
+      return NextResponse.json(
+        { message: "El comentario es invalido." },
+        { status: 400 },
+      );
+    }
+
+    await connectToMongoose();
+
+    const comment = await CommentModel.findByIdAndDelete(commentId);
+
+    if (!comment) {
+      return NextResponse.json(
+        { message: "Comentario no encontrado." },
+        { status: 404 },
+      );
+    }
+
+    return NextResponse.json({ ok: true });
+  } catch {
+    return NextResponse.json(
+      { message: "No se pudo eliminar el comentario." },
+      { status: 500 },
+    );
+  }
+}
